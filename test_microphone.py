@@ -3,6 +3,12 @@ import queue
 import sounddevice as sd
 import vosk
 
+MODEL = 'model'
+DEVICE = 0
+
+device_info = sd.query_devices(DEVICE, 'input')
+samplerate = int(device_info['default_samplerate'])
+
 q = queue.Queue()
 
 
@@ -11,16 +17,11 @@ def callback(indata, frames, time, status):
     q.put(bytes(indata))
 
 
-model = 'model'
-device = 0
-device_info = sd.query_devices(0, 'input')
-samplerate = int(device_info['default_samplerate'])
-
 try:
-    model = vosk.Model(model)
+    model = vosk.Model(MODEL)
 
     with sd.RawInputStream(samplerate=samplerate, blocksize=8000,
-                           device=device, dtype='int16',
+                           device=DEVICE, dtype='int16',
                            channels=1, callback=callback):
 
         rec = vosk.KaldiRecognizer(model, samplerate)
